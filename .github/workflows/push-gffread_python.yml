@@ -10,7 +10,7 @@ on:
 env:
   IMAGE_NAME: "gffread_python"
   IMAGE_TAG: "python-3.10_Linux_x86_64"
-  QUAY_REPO: "quay.io/simon-42/playground/"
+  QUAY_REPO: "quay.io/simon-42/playground"
   TRIVY_VERSION: "0.49.1"
 
 jobs:
