@@ -29,16 +29,16 @@ jobs:
     - uses: actions/checkout@v4.1.1
 
     - name: Build image
-      run: docker build -t ${QUAY_REPO}/${IMAGE_NAME}:${IMAGE_TAG} -f ${IMAGE_NAME}/Dockerfile . 
+      run: docker build -t ${QUAY_REPO}:${IMAGE_NAME}_${IMAGE_TAG} -f ${IMAGE_NAME}/Dockerfile . 
 
     - name: Scan image
-      run: trivy image ${QUAY_REPO}/${IMAGE_NAME}:${IMAGE_TAG} --scanners vuln,secret --severity CRITICAL --exit-code 1
+      run: trivy image ${QUAY_REPO}:${IMAGE_NAME}_${IMAGE_TAG} --scanners vuln,secret --severity CRITICAL --exit-code 1
 
     - name: Quay.io login
       run: docker login -u ${{ secrets.DOCKERBUILD_ROBOT_USERNAME }} --password-stdin <<< ${{ secrets.DOCKERBUILD_ROBOT_PASSWORD }} quay.io
 
     - name: Push image
-      run: docker push ${QUAY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
+      run: docker push ${QUAY_REPO}:${IMAGE_NAME}_${IMAGE_TAG}
 
     - name: Remove docker config
       run: rm -rf /home/runner/.docker
