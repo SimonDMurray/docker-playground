@@ -1,3 +1,4 @@
+#Could use debian:trixie and then when they update it this will update too, not reproducible but more secure as less CVEs
 FROM debian:trixie-20240311
 
 ARG gffread_version='0.12.7'
