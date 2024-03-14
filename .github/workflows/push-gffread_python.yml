@@ -1,0 +1,47 @@
+name: Build gffread_python
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - gffread_python/Dockerfile
+
+#When updating images change image tag below to correspond to changes
+env:
+  IMAGE_NAME: "gffread_python"
+  IMAGE_TAG: "python-3.10_Linux_x86_64"
+  QUAY_REPO: "quay.io/simon-42/playground/"
+  TRIVY_VERSION: "0.49.1"
+
+jobs:
+  build:
+    name: Build
+    #Using ubuntu-22.04 instead of ubuntu-latest to use Docker 24 instead of Docker 25 as it causes gitpod issues
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Clean workspace before start
+      run: rm -rf $GITHUB_WORKSPACE/*
+
+    - name: Install trivy
+      run: wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb; sudo dpkg -i trivy_${TRIVY_VERSION}_Linux-64bit.deb
+
+    - uses: actions/checkout@v4.1.1
+
+    - name: Build image
+      run: docker build -t ${QUAY_REPO}/${IMAGE_NAME}:${IMAGE_TAG} -f ${IMAGE_NAME}/Dockerfile . 
+
+    - name: Scan image
+      run: trivy image ${QUAY_REPO}/${IMAGE_NAME}:${IMAGE_TAG} --scanners vuln,secret --severity CRITICAL --exit-code 1
+
+    - name: Quay.io login
+      run: docker login -u ${{ secrets.DOCKERBUILD_ROBOT_USERNAME }} --password-stdin <<< ${{ secrets.DOCKERBUILD_ROBOT_PASSWORD }} quay.io
+
+    - name: Push image
+      run: docker push ${QUAY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
+
+    - name: Remove docker config
+      run: rm -rf /home/runner/.docker
+
+    - name: Clean workspace after finish
+      run: rm -rf $GITHUB_WORKSPACE/*
